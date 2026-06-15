@@ -1,88 +1,100 @@
-# Player Locator Plus
+# NeoPlayer Locator Plus
 
-Track other players' locations on your experience bar like a compass!
+NeoPlayer Locator Plus is a NeoForge 1.21.1 port of
+[Player Locator Plus](https://github.com/timas130/PlayerLocatorPlus).
+It shows other players as direction markers near the experience bar, similar to a
+compass-style player locator.
 
-<img alt="Requires Cloth Config API" height="56" src="https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy/requires/cloth-config-api_vector.svg"> <img alt="Requires Fabric API" height="56" src="https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy/requires/fabric-api_vector.svg"> <img alt="Requires Fabric Langauge Kotlin" height="56" src="requires_kotlin.svg">
+This fork targets:
 
-![Screenshot of the player locator](screenshot1.png)
+- Minecraft 1.21.1
+- NeoForge 21.1.233 or newer in the 1.21.1 line
+- Java 21
 
-## Marker colors
+It does not require Fabric API, Fabric Language Kotlin, Cloth Config, or Mod
+Menu. The old Fabric/Kotlin sources are left in the repository for upstream
+reference, but the NeoForge build uses the Java sources under `src/main/java`.
 
-By default, each player's color is determined randomly by their UUID. There are other options in the config (see below).
+## Features
 
-## Distance fade
+- Server sends relative player location updates to clients with the mod.
+- Client renders player direction markers on the HUD.
+- Optional distance-based marker fade.
+- Optional height arrows for players above or below you.
+- Players can hide by sneaking, wearing configured hiding equipment, wearing mob
+  heads, or being invisible.
+- Color modes: UUID, team color, custom player colors, or one constant color.
+- `/plp reload`, `/plp random`, and `/plp color` commands.
 
-When a player is *very* far away, their marker starts to fade:
-
-![The player locator with one marker slightly faded](screenshot2.png)
-
-## Disappearing
-
-There are three ways to hide from the player locator:
-1. Crouching
-2. Wearing a carved pumpkin
-3. Having the invisibility effect
-
-![A player wearing a pumpkin is not shown on the player locator](screenshot3.png)
+The Minecraft 1.21.11 vanilla waypoint integration from upstream is not included
+in this 1.21.1 port because that API is not available in Minecraft 1.21.1.
 
 ## Configuration
 
-The config is available at `config/player-locator-plus.toml`.
-You can also access the configuration screen with Mod Menu.
+The config is created on first launch at:
 
-Server parameters:
+```text
+config/player-locator-plus.properties
+```
 
-- `enabled`: Is the mod enabled server-side at all. Note that the bar will still be visible if `visible` is true. Default: `true`
-- `sendServerConfig`: Whether the server will try to force its config on the client. This will only have effect if the clients have `acceptServerConfig` set to true. Default: `true`
-- `sendDistance`: Whether to send distance information along with the direction information.
-  There's basically no point in settings this to `false`, as players can still easily
-  triangulate the exact location of others even without knowing the distance.
-  However, it is harder with this option on, especially if you consider that other players
-  move.
-  Default: `true`
-- `maxDistance`: The maximum distance at which other players are visible on the compass.
-  Default: `0` (unlimited)
-- `directionPrecision`: The amount of segments the direction vector is split into. Decreasing this value significantly will make tracking way more inaccurate but be helpful in preventing triangulation. Default: `300`
-- `ticksBetweenUpdates`: How many ticks apart are the compass updates.
-  The less, the smoother the movements of faraway players are.
-  Close players (inside the entity render distance) do not depend on this parameter as much.
-  Default: `5` (four times per second)
-- `sneakingHides`: Whether sneaking hides players from the locator. Default: `true`
-- `pumpkinHides`: Whether wearing a pumpkin (or any other `gaze_disguise_equipment`) hides
-  players from the locator.
-  Default: `true`
-- `mobHeadsHide`: Whether wearing a mob/player head hides players from the locator. The exact list can be edited with a datapack by changing `data/player-locator-plus/tags/item/hiding_equipment.json` (see default [here](https://github.com/timas130/PlayerLocatorPlus/blob/main/src/main/resources/data/player-locator-plus/tags/item/hiding_equipment.json)). Default: `true`
-- `invisibilityHides`: Whether being invisible hides players from the locator. Default: `true`
-- `colorMode`: How to determine the color of the markers. Vanilla waypoints always override this setting. Available modes:
-  - `UUID` (default): Assign a random color based on the UUID of the player.
-  - `TEAM_COLOR`: Use the color of the player's team (or white)
-  - `CUSTOM`: Allow every player to assign a color with the `/plp color` command
-  - `CONSTANT`: Everyone has the same color from the `constantColor` option
-- `constantColor`: Color used when `colorMode` is `CONSTANT`. Default: `0xFFFFFF` (white)
-- `allowVanillaLocatorBar`: Allow sending waypoint to vanilla players without the mod.  Default: `true`
+Custom player colors are stored at:
 
-Client parameters:
+```text
+config/player-locator-plus-player-colors.properties
+```
 
-- `visible`: Show the player locator. Default: `true`
-- `visibleEmpty`: Show the player locator even there are no players online and no markers in sight. Default: `false`
-- `acceptServerConfig`: Whether to override the client-side config with the server-side one. The server config will also be able set client parameters. Default: `true`
-- `fadeMarkers`: Fade markers of faraway players. Default: `true`
-- `fadeStart`: At what distance the markers start to fade. Default: `100`
-- `fadeEnd`: At what distance the markers stop fading and settle at `fadeEndOpacity`. Default: `1000`
-- `fadeEndOpacity`: The final opacity when/after `fadeEnd` is reached. Default: `0.3`
-- `showHeight`: Show little arrows above/below a marker if the height difference is significant.
-  Default: `true`
-- `alwaysShowHeads`: Always show player heads, regardless of whether Tab is pressed. Default: `false`
-- `showHeadsOnTab`: Show player heads when Tab is pressed. Default: `true`
-- `showNamesOnTab`: Show player names when Tab is pressed. Default: `true`
-- `showVanillaWaypoints`: Show custom waypoints created by adding the `waypoint_transmit_range` attribute. Default: `true`
+Server and client options are stored in the same properties file. When
+`sendServerConfig=true`, the server sends its config to connecting clients that
+accept server config.
 
-## Acknowledgements
+Common options include:
 
-Originally introduced in Minecraft: Bedrock Edition Preview
-[here](https://www.minecraft.net/en-us/article/test-the-new-player-locator-bar),
-covered by Phoenix SC.
+- `enabled`: enable or disable server-side location updates.
+- `visible`: show the locator bar on the client.
+- `visibleEmpty`: show the locator even when no markers are visible.
+- `acceptServerConfig`: allow the server to override client settings.
+- `sendServerConfig`: send server config to clients.
+- `sendDistance`: send distance information along with direction information.
+- `maxDistance`: maximum visible distance; `0` means unlimited.
+- `directionPrecision`: number of direction segments used for quantized updates.
+- `ticksBetweenUpdates`: server ticks between location update packets.
+- `sneakingHides`: hide sneaking players.
+- `pumpkinHides`: hide players wearing a carved pumpkin or tagged hiding gear.
+- `mobHeadsHide`: hide players wearing mob/player heads.
+- `invisibilityHides`: hide invisible players.
+- `colorMode`: `UUID`, `TEAM_COLOR`, `CUSTOM`, or `CONSTANT`.
+- `constantColor`: RGB color used by `CONSTANT` mode.
+- `fadeMarkers`, `fadeStart`, `fadeEnd`, `fadeEndOpacity`: marker fade settings.
+- `showHeight`: show up/down arrows for height difference.
+- `alwaysShowHeads`, `showHeadsOnTab`, `showNamesOnTab`: HUD label/head display.
+
+Hiding equipment can be changed with a datapack by editing the item tag:
+
+```text
+data/player-locator-plus/tags/item/hiding_equipment.json
+```
+
+## Building
+
+Use Java 21, then run:
+
+```powershell
+.\gradlew.bat build --no-daemon
+```
+
+The built mod jar is written to:
+
+```text
+build/libs/neoplayer-locator-plus-2.3.0-neoforge.1+1.21.1.jar
+```
+
+## Validation
+
+This fork has been built with Java 21 and validated on a dedicated NeoForge
+21.1.233 server using Collin's current NeoForge 1.21.1 Modrinth modpack. The
+server loaded the mod and reached `Done`.
 
 ## License
 
-Player Locator Plus is licensed under the GNU General Public License Version 3 or later.
+Player Locator Plus is licensed under the GNU General Public License Version 3
+or later.
